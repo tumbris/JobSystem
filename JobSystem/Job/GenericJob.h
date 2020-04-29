@@ -10,33 +10,33 @@
 class GenericJob : public ReferenceCountable<ThreadSafePolicy>, public Noncopyable
 {
 public:
-	template <class Fn>
-	GenericJob(Fn&& job) : job(std::forward<Fn>(job)) {}
-	virtual ~GenericJob() = default;
+    template <class Fn>
+    GenericJob(Fn&& job) : job(std::forward<Fn>(job)) {}
+    virtual ~GenericJob() = default;
 
-	void Execute();
+    void Execute();
 
-	template <class Fn>
-	GenericJob& Then(Fn&& then);
+    template <class Fn>
+    GenericJob& Then(Fn&& then);
 
 private:
-	std::function<void()> job;
+    std::function<void()> job;
 
 #if !defined(NDEBUG)
-	bool startedExecution = false;
+    bool startedExecution = false;
 #endif
 };
 
 template<class Fn>
 GenericJob& GenericJob::Then(Fn&& then)
 {
-	assert(!startedExecution);
-	job = [prev = std::move(job),
-		   thisPtr = IntrusivePtr(this),
-	       next = std::forward<Fn>(then)]()
-	{
-		prev();
-		then(*thisPtr);
-	};
-	return *this;
+    assert(!startedExecution);
+    job = [prev = std::move(job),
+           thisPtr = IntrusivePtr(this),
+           next = std::forward<Fn>(then)]()
+    {
+        prev();
+        then(*thisPtr);
+    };
+    return *this;
 }

@@ -3,8 +3,8 @@
 void GenericJob::Execute()
 {
 #if !defined(NDEBUG)
-	startedExecution = true;
+    startedExecution = true;
 #endif
 
-	job();
+    job();
 }
