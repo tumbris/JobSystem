@@ -30,13 +30,7 @@ public:
 	}
 
 	IntrusivePtr(const IntrusivePtr& other)
-		: data(other.data)
-	{
-		if (data)
-		{
-			data->AddRef();
-		}
-	}
+		: data(other.data) {}
 
 	IntrusivePtr(IntrusivePtr&& other)
 		: data(other.data)
@@ -77,8 +71,6 @@ public:
 	const T* Get() const { return data; }
 
 	operator bool() { return data != nullptr; }
-
-	template <class... Args> friend IntrusivePtr<T> MakeIntrusive(Args&&... args);
 };
 
 template <class T, class... Args> 

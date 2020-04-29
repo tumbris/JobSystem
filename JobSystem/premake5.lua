@@ -1,5 +1,5 @@
 project "JobSystem"
-    kind "SharedLib"
+    kind "StaticLib"
     language "C++"
     cppdialect "C++17"
     objdir (OutputDir .. "/%{prj.name}")
@@ -40,8 +40,3 @@ project "JobSystem"
 
     filter {"platforms:Win64"}
         systemversion "latest"
-
-        defines
-        {
-            "JOBSYSTEM_EXPORTS",
-        }

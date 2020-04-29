@@ -18,8 +18,8 @@ workspace "JobSystem"
         "MultiProcessorCompile"
     }
 
-    OutputDir = "%{wks.location}/tmp/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
     TargetDir = "%{wks.location}/bin/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}" 
+    OutputDir = "%{wks.location}/bin/tmp/%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
     include "Utility"
     include "JobSystem"

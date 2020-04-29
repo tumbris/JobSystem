@@ -1,22 +1,17 @@
+#include <Utility/Callback.h>
 #include <Utility/Ref/IntrusivePtr.h>
 #include <iostream>
 #include <vector>
 
-class A : public ReferenceCountable<>
+class A
 {
-
+public:
+	int foo() { return 5; }
 };
 
 int main()
 {
-	auto ptr = MakeIntrusive<A>();
+	A a;
 
-	auto b = ptr;
-
-	{
-		IntrusivePtr<A> c;
-		c = b;
-		c = std::move(b);
-	}
-	std::cout << "Hello, World!\n";
+	std::cout << Callback(&a, &A::foo)();
 }

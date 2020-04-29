@@ -1,6 +1,7 @@
 #pragma once
 class Noncopyable
 {
+public:
 	Noncopyable() = default;
 	~Noncopyable() = default;
 	Noncopyable(const Noncopyable&) = delete;

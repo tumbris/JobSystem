@@ -3,8 +3,7 @@
 #include <Utility/Ref/IntrusivePtr.h>
 #include <Utility/Noncopyable.h>
 #include <functional>
-
-
+#include <cassert>
 
 ///////////////////////////////////////////////////////////////////////////////////
 /////////////////////USE THIS CLASS ONLY OWNED BY INTRUSIVEPTR/////////////////////
@@ -22,11 +21,16 @@ public:
 
 private:
 	std::function<void()> job;
+
+#if !defined(NDEBUG)
+	bool startedExecution = false;
+#endif
 };
 
 template<class Fn>
 GenericJob& GenericJob::Then(Fn&& then)
 {
+	assert(!startedExecution);
 	job = [prev = std::move(job),
 		   thisPtr = IntrusivePtr(this),
 	       next = std::forward<Fn>(then)]()
