@@ -10,9 +10,10 @@ public:
     ~Workload() = default;
 
     void AddJob(IntrusivePtr<GenericJob> job, JobGroupPriority priority);
-    void ExecuteOneJob();
+    bool ExecuteOneJob();
+
+    std::size_t GetJobsCountWithHigherPriority(JobGroupPriority priority);
 
 private:
     std::map<JobGroupPriority, JobGroup> jobGroups;
 };
-

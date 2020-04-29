@@ -18,3 +18,8 @@ bool JobGroup::ExecuteOneJob()
     }
     return false;
 }
+
+std::size_t JobGroup::Size() const
+{
+    return jobs.size();
+}

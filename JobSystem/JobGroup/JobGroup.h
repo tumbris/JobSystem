@@ -16,6 +16,7 @@ public:
     virtual bool ExecuteOneJob();
 
     JobGroupPriority GetPriority() const { return priority; }
+    std::size_t Size() const;
 
 protected:
     std::queue<IntrusivePtr<GenericJob>> jobs;
