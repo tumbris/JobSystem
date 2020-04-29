@@ -6,12 +6,12 @@
 class A
 {
 public:
-	int foo() { return 5; }
+    int foo() { return 5; }
 };
 
 int main()
 {
-	A a;
+    A a;
 
-	std::cout << Callback(&a, &A::foo)();
+    std::cout << Callback(&a, &A::foo)();
 }

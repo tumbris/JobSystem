@@ -5,7 +5,7 @@
 #include <Utility/Ref/IntrusivePtr.h>
 #include <queue>
 
-class JobGroup
+class JobGroup : public Noncopyable
 {
 public:
 
@@ -13,11 +13,23 @@ public:
     virtual ~JobGroup() = default;
 
     void AddJob(IntrusivePtr<GenericJob> job);
-    void ExecuteOneJob();
+    virtual bool ExecuteOneJob();
 
-    JobGroupPriority GetPriority() { return priority; }
+    JobGroupPriority GetPriority() const { return priority; }
 
-private:
+protected:
     std::queue<IntrusivePtr<GenericJob>> jobs;
     JobGroupPriority priority;
 };
+
+namespace std
+{
+    template<>
+    struct less<JobGroup>
+    {
+        constexpr bool operator()(const JobGroup& lhs, const JobGroup& rhs) const
+        {
+            return lhs.GetPriority() < rhs.GetPriority();
+        }
+    };
+}

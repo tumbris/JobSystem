@@ -8,8 +8,13 @@ void JobGroup::AddJob(IntrusivePtr<GenericJob> job)
     jobs.push(std::move(job));
 }
 
-void JobGroup::ExecuteOneJob()
+bool JobGroup::ExecuteOneJob()
 {
-    jobs.front()->Execute();
-    jobs.pop();
+    if (!jobs.empty())
+    {
+        jobs.front()->Execute();
+        jobs.pop();
+        return true;
+    }
+    return false;
 }
