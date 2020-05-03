@@ -32,11 +32,11 @@ GenericJob& GenericJob::Then(Fn&& then)
 {
     assert(!startedExecution);
     job = [prev = std::move(job),
-           thisPtr = IntrusivePtr(this),
-           next = std::forward<Fn>(then)]()
+           this,
+           next = std::forward<Fn>(then)]() mutable
     {
         prev();
-        then(*thisPtr);
+        next(this);
     };
     return *this;
 }

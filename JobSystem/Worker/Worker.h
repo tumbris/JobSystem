@@ -16,7 +16,10 @@ public:
     Worker(WorkerAffinity affinity);
     ~Worker();
 
-    void AddJob(IntrusivePtr<GenericJob> job, JobGroupPriority priority);
+    Worker(Worker&&) = default;
+    Worker& operator=(Worker&&) = default;
+
+    void Enqueue(IntrusivePtr<GenericJob> job, JobGroupPriority priority);
     std::size_t GetJobsCountWithHigherPriority(JobGroupPriority priority);
 
     std::thread::id GetId() { return workerId; }
@@ -26,22 +29,25 @@ private:
 
     struct WorkerProcParams
     {
+        WorkerProcParams(Worker* worker, bool isDone) : worker(worker), isDone(isDone) {}
+
         Worker* worker = nullptr;
         std::atomic_bool isDone = false;
     };
 
-    static void WorkerProc(std::shared_ptr<WorkerProcParams> workerParams);
+    static void WorkerProc(WorkerProcParams* workerParams);
+    void Enqueue(const std::pair<IntrusivePtr<GenericJob>, JobGroupPriority>& jobConfig);
 private:
     std::optional<std::thread> workerThread;
 
     Workload primaryWorkload;
-    std::queue<IntrusivePtr<GenericJob>> buffer;
+    std::queue<std::pair<IntrusivePtr<GenericJob>, JobGroupPriority>> buffer;
 
     std::mutex mtx;
     std::condition_variable addJobNotifier;
 
-    std::shared_ptr<WorkerProcParams> workerProcParams;
-
+    WorkerProcParams* workerProcParams;
+    
     std::thread::id workerId;
     WorkerAffinity affinity;
 };

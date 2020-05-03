@@ -9,6 +9,7 @@ class JobGroup : public Noncopyable
 {
 public:
 
+    JobGroup() : priority(JobGroupDefaultPriority) {}
     JobGroup(JobGroupPriority priority);
     virtual ~JobGroup() = default;
 
@@ -28,7 +29,7 @@ namespace std
     template<>
     struct less<JobGroup>
     {
-        constexpr bool operator()(const JobGroup& lhs, const JobGroup& rhs) const
+        bool operator()(const JobGroup& lhs, const JobGroup& rhs) const
         {
             return lhs.GetPriority() < rhs.GetPriority();
         }

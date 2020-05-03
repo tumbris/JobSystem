@@ -7,9 +7,9 @@ void Workload::AddJob(IntrusivePtr<GenericJob> job, JobGroupPriority priority)
 
 bool Workload::ExecuteOneJob()
 {
-    for (auto& group : jobGroups)
+    for (auto it = jobGroups.begin(); it != jobGroups.end(); ++it)
     {
-        if (group.second.ExecuteOneJob())
+        if (it->second.ExecuteOneJob())
         {
             return true;
         }
@@ -32,4 +32,16 @@ std::size_t Workload::GetJobsCountWithHigherPriority(JobGroupPriority priority)
         res += found->second.Size();
     }
     return res;
+}
+
+bool Workload::Empty() const
+{
+    for (const auto& jobGroup : jobGroups)
+    {
+        if (jobGroup.second.Size() != 0)
+        {
+            return false;
+        }
+    }
+    return true;
 }

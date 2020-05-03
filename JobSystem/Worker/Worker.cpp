@@ -4,7 +4,7 @@ Worker::Worker(WorkerAffinity affinity)
     : workerThread(std::nullopt)
     , affinity(affinity)
 {
-    workerProcParams = std::make_shared<WorkerProcParams>(this, false);
+    workerProcParams = new WorkerProcParams{ this, false };
     workerThread.emplace(&Worker::WorkerProc, workerProcParams);
     workerId = workerThread->get_id();
 }
@@ -12,6 +12,7 @@ Worker::Worker(WorkerAffinity affinity)
 Worker::~Worker()
 {
     workerProcParams->isDone.store(true);
+    addJobNotifier.notify_all();
 
     if (workerThread.has_value())
     {
@@ -19,10 +20,10 @@ Worker::~Worker()
     }
 }
 
-void Worker::AddJob(IntrusivePtr<GenericJob> job, JobGroupPriority priority)
+void Worker::Enqueue(IntrusivePtr<GenericJob> job, JobGroupPriority priority)
 {
     mtx.lock();
-    buffer.push(job);
+    buffer.push({ job, priority });
     mtx.unlock();
     addJobNotifier.notify_all();
 }
@@ -32,28 +33,35 @@ std::size_t Worker::GetJobsCountWithHigherPriority(JobGroupPriority priority)
     return primaryWorkload.GetJobsCountWithHigherPriority(priority);
 }
 
-void Worker::WorkerProc(std::shared_ptr<WorkerProcParams> workerParams)
+void Worker::WorkerProc(WorkerProcParams* workerParams)
 {
-    while (workerParams->isDone.load())
+    using namespace std::chrono_literals;
+    Worker& worker = *(workerParams->worker);
+
+    while (!(workerParams->isDone.load()))
     {
-        Worker& worker = *(workerParams->worker);
         {
-            std::unique_lock<std::mutex> ulock;
-            while (!(worker.buffer.empty()))
+            std::unique_lock<std::mutex> ulock(worker.mtx);
+            if (worker.primaryWorkload.Empty())
             {
-                worker.addJobNotifier.wait(ulock);
+                worker.addJobNotifier.wait(ulock, [&]() { return !(worker.buffer.empty()) || workerParams->isDone.load(); });
+            }
+            else
+            {
+                worker.addJobNotifier.wait_for(ulock, 0us, [&]() { return !(worker.buffer.empty()) || workerParams->isDone.load(); });
             }
             while (!(worker.buffer.empty()))
             {
-                worker.AddJob(worker.buffer.front());
+                auto jobConfig = worker.buffer.front();
+                worker.primaryWorkload.AddJob(jobConfig.first, jobConfig.second);
                 worker.buffer.pop();
             }
         }
-
-        bool hadJob = true;
-        do
-        {
-            hadJob = worker.primaryWorkload.ExecuteOneJob();
-        } while (hadJob);
+        worker.primaryWorkload.ExecuteOneJob();
     }
+}
+
+void Worker::Enqueue(const std::pair<IntrusivePtr<GenericJob>, JobGroupPriority>& jobConfig)
+{
+    Enqueue(jobConfig.first, jobConfig.second);
 }

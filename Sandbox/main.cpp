@@ -1,17 +1,21 @@
-#include <Utility/Callback.h>
-#include <Utility/Ref/IntrusivePtr.h>
+#include <JobSystem/Worker/WorkerPool.h>
 #include <iostream>
-#include <vector>
-
-class A
-{
-public:
-    int foo() { return 5; }
-};
 
 int main()
 {
-    A a;
+    std::vector<WorkerAffinity> affinities(std::thread::hardware_concurrency(), 0);
+    WorkerPool::CreateInstance({ affinities });
 
-    std::cout << Callback(&a, &A::foo)();
+    auto job = new GenericJob([]()
+        {
+            std::cout << "Hui\n";
+        });
+    job->Then([](GenericJob* prev)
+        {
+            std::cout << "Hui has been printed!\n";
+        });
+
+    WorkerPool::GetInstance()->Enqueue(job);
+
+    WorkerPool::DeleteInstance();
 }

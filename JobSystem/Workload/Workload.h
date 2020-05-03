@@ -14,6 +14,8 @@ public:
 
     std::size_t GetJobsCountWithHigherPriority(JobGroupPriority priority);
 
+    bool Empty() const;
+
 private:
     std::map<JobGroupPriority, JobGroup> jobGroups;
 };
